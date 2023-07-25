@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:sqflite/sqflite.dart';
-import '../models/list.dart';
 import 'package:path/path.dart';
 import '../models/devices.dart';
 import '../models/connection_entry.dart';
@@ -65,7 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 Future<String> loadAsset(String file) async {
-  String current = Directory.current.path;
   return await rootBundle.loadString(file);
 }
 

@@ -3,8 +3,8 @@ import 'package:fun_application/screens/main_screen.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/connection_fields.dart';
-import '../database/database.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import '../models/devices_list.dart';
 
 class ConnectionEntryForm extends StatelessWidget {
   final formKey = GlobalKey<FormState>();
@@ -16,55 +16,58 @@ class ConnectionEntryForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Form(
-          key: formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                autofocus: false,
-                decoration: const InputDecoration(
-                  labelText: "Name",
-                  border: OutlineInputBorder(),
-                ),
-                onSaved: (value) {
-                  connectionEntry.name = value;
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return "Please enter a name";
-                  } else {
-                    return null;
-                  }
-                },
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  ElevatedButton(
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text("Cancel"),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Form(
+            key: formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  autofocus: false,
+                  decoration: const InputDecoration(
+                    labelText: "Name",
+                    border: OutlineInputBorder(),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        formKey.currentState?.save();
-                        saveEntries(connectionEntry);
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => MyHomePage()));
-                      }
-                    },
-                    child: const Text("Save"),
-                  )
-                ],
-              ),
-            ],
+                  onSaved: (value) {
+                    connectionEntry.name = value;
+                  },
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Please enter a name";
+                    } else {
+                      return null;
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          formKey.currentState?.save();
+                          saveEntries(connectionEntry);
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => MyHomePage()));
+                        }
+                      },
+                      child: const Text("Save"),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 500, child: DeviceList())
+              ],
+            ),
           ),
         ),
       ),
@@ -73,7 +76,7 @@ class ConnectionEntryForm extends StatelessWidget {
 }
 
 void saveEntries(ConnectionEntryFields connectionentry) async {
-  await deleteDatabase(join(await getDatabasesPath(), 'connections.db'));
+  // await deleteDatabase(join(await getDatabasesPath(), 'connections.db'));
   var db = await openDatabase(join(await getDatabasesPath(), 'connections.db'),
       version: 1, onCreate: (Database db, int version) async {
     loadAsset("lib/database/open_db.txt").then((String create) async {
