@@ -3,21 +3,24 @@ import 'package:bluetooth_connector/bluetooth_connector.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class DeviceList extends StatefulWidget {
+  DeviceList(
+      {super.key, this.isSelected, this.devices, this.flutterbluetoothadapter});
   @override
   State<DeviceList> createState() => _DeviceListState();
-  List<BtDevice> devices = [];
+  var devices;
   bool? _serviceEnabled;
+  Color color = Colors.white;
+  final isSelected;
+  final flutterbluetoothadapter;
 }
 
 class _DeviceListState extends State<DeviceList> {
-  BluetoothConnector flutterbluetoothadapter = BluetoothConnector();
-
   @override
   void initState() {
     super.initState();
-    flutterbluetoothadapter
-        .initBlutoothConnection("20585adb-d260-445e-934b-032a2c8b2e14");
-    flutterbluetoothadapter
+    widget.flutterbluetoothadapter
+        .initBlutoothConnection("75C276C3-8F97-20BC-A143-B354244886D4");
+    widget.flutterbluetoothadapter
         .checkBluetooth()
         .then((value) => print(value.toString()));
     _get_devices();
@@ -28,7 +31,8 @@ class _DeviceListState extends State<DeviceList> {
   }
 
   void _get_devices() async {
-    widget.devices = await flutterbluetoothadapter.getDevices();
+    widget.devices = await widget.flutterbluetoothadapter.getDevices();
+    setState(() {});
   }
 
   @override
@@ -36,14 +40,14 @@ class _DeviceListState extends State<DeviceList> {
     return Scaffold(
       body: Column(
         children: [
-          ListView(
-            shrinkWrap: true,
-            children: _createDevices(),
+          Expanded(
+            child: _createDevices(),
           ),
           ElevatedButton(
               child: const Text("Scan"),
               onPressed: () async {
-                widget.devices = await flutterbluetoothadapter.getDevices();
+                widget.devices =
+                    await widget.flutterbluetoothadapter.getDevices();
                 setState(() {});
               }),
         ],
@@ -53,32 +57,19 @@ class _DeviceListState extends State<DeviceList> {
 
   _createDevices() {
     if (widget.devices.isEmpty) {
-      return [
-        const Center(
-          child: Text("No Paired Devices listed..."),
-        )
-      ];
-    }
-    List<Widget> deviceList = [];
-    widget.devices.forEach((element) {
-      deviceList.add(
-        InkWell(
-          key: UniqueKey(),
-          onTap: () {
-            flutterbluetoothadapter.startClient(
-                widget.devices.indexOf(element), true);
-          },
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(border: Border.all()),
-            child: Text(
-              element.name.toString(),
-              style: const TextStyle(fontSize: 18),
-            ),
-          ),
-        ),
+      return const Center(
+        child: Text("No Paired Devices listed..."),
       );
-    });
-    return deviceList;
+    }
+    return Scaffold(
+        body: ListView.builder(
+            itemCount: widget.devices.length,
+            itemBuilder: ((context, index) {
+              return ListTile(
+                  title: Text(widget.devices[index].name.toString()),
+                  tileColor: widget.isSelected[index] ? Colors.blue : null,
+                  onTap: () => setState(() =>
+                      widget.isSelected[index] = !widget.isSelected[index]));
+            })));
   }
 }
