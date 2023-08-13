@@ -36,6 +36,7 @@ class _DeviceState extends State<Device> {
 
   final Uuid characteristicUuid =
       Uuid.parse("6ACF4F08-CC9D-D495-6B41-AA7E60C4E8A6");
+  bool checked = false;
 
   void set_color(bool connected) {
     color = connected ? Colors.green : Colors.red;
@@ -51,6 +52,7 @@ class _DeviceState extends State<Device> {
         ),
         tileColor: color,
         subtitle: Text(widget.entries['connection']),
+        // This can be uncommented when increasing the scope to handle more
         // trailing: PopupMenuButton<SampleItem>(
         //   initialValue: selectedMenu,
         //   // Callback that sets the selected popup menu item.
@@ -63,56 +65,86 @@ class _DeviceState extends State<Device> {
         //   ],
         // ),
         onTap: () {
-          _connection = flutterReactiveBle
-              .connectToDevice(id: widget.entries["connection_id"])
-              .listen((event) {
-            switch (event.connectionState) {
-              case DeviceConnectionState.connected:
-                {
-                  if (_connected) {
-                    _connection.cancel();
-                    setState(() {
-                      _foundDeviceWaitingToConnect = true;
-                      _connected = false;
-                      color = Colors.red;
-                    });
-                  } else {
-                    _rxCharacteristic = QualifiedCharacteristic(
-                        serviceId: serviceUuid,
-                        characteristicId: characteristicUuid,
-                        deviceId: event.deviceId);
-                    setState(() {
-                      _foundDeviceWaitingToConnect = false;
-                      _connected = true;
-                      color = Colors.green;
-                    });
-                  }
-                  break;
-                }
-              // Can add various state state updates on disconnect
-              case DeviceConnectionState.disconnected:
-                {
-                  if (_connected) {
-                    setState(() {
-                      _foundDeviceWaitingToConnect = true;
-                      _connected = false;
-                      color = Colors.red;
-                    });
-                  } else {
-                    _rxCharacteristic = QualifiedCharacteristic(
-                        serviceId: serviceUuid,
-                        characteristicId: characteristicUuid,
-                        deviceId: event.deviceId);
-                    setState(() {
-                      _foundDeviceWaitingToConnect = false;
-                      _connected = true;
-                      color = Colors.green;
-                    });
-                  }
-                }
-              default:
-            }
-          });
+          if (_connected) {
+            ConnectionStateUpdate(
+              deviceId: widget.entries['connection_id'],
+              connectionState: DeviceConnectionState.disconnected,
+              failure: null,
+            );
+
+            // _connection.cancel();
+            setState(() {
+              _foundDeviceWaitingToConnect = true;
+              _connected = false;
+              color = Colors.red;
+              checked = true;
+            });
+          } else {
+            setState(() {
+              _foundDeviceWaitingToConnect = false;
+              _connected = true;
+              color = Colors.green;
+              checked = true;
+            });
+          }
+
+          // _connection = flutterReactiveBle
+          //     .connectToDevice(id: widget.entries["connection_id"])
+          //     .listen((event) {
+          //   switch (event.connectionState) {
+          //     case DeviceConnectionState.connected ||
+          //           DeviceConnectionState.connecting:
+          //       {
+          //         if (_connected) {
+          //           ConnectionStateUpdate(
+          //             deviceId: widget.entries['connection_id'],
+          //             connectionState: DeviceConnectionState.disconnected,
+          //             failure: null,
+          //           );
+
+          //           _connection.cancel();
+          //           setState(() {
+          //             _foundDeviceWaitingToConnect = true;
+          //             _connected = false;
+          //             color = Colors.red;
+          //             checked = true;
+          //           });
+          //         } else {
+          //           setState(() {
+          //             _foundDeviceWaitingToConnect = false;
+          //             _connected = true;
+          //             color = Colors.green;
+          //             checked = true;
+          //           });
+          //           _rxCharacteristic = QualifiedCharacteristic(
+          //               serviceId: serviceUuid,
+          //               characteristicId: characteristicUuid,
+          //               deviceId: event.deviceId);
+          //         }
+          //         break;
+          //       }
+          //     // Can add various state updates on disconnect
+          //     case DeviceConnectionState.disconnected:
+          //       {
+          //         if (_connected) {
+          //           ConnectionStateUpdate(
+          //             deviceId: widget.entries['connection_id'],
+          //             connectionState: DeviceConnectionState.disconnected,
+          //             failure: null,
+          //           );
+
+          //           _connection.cancel();
+          //           setState(() {
+          //             _foundDeviceWaitingToConnect = true;
+          //             _connected = false;
+          //             color = Colors.red;
+          //             checked = true;
+          //           });
+          //         }
+          //       }
+          //     default:
+          //   }
+          // });
         });
   }
 }
